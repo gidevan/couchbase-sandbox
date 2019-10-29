@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.vsanyc.sandbox.couchbase.entities.BulkOptions;
 import org.vsanyc.sandbox.couchbase.entities.SgDocBody;
+import org.vsanyc.sandbox.couchbase.entities.UserOptions;
 
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
@@ -35,6 +36,8 @@ public class SyncGatewayServiceImpl implements SyncGatewayService {
     private static final String ALL_DOCS_PATH = "/{0}/_all_docs?access=false&channels=true&include_docs=false&revs=false"
             + "&update_seq=false";
 
+    private static final String ADD_USER_PATH = "/{0}/_user/";
+
     private static final String TOTAL_ROWS = "total_rows";
     private static final String TOTAL_DOCUMENTS = "total_docs";
     private static final String ROWS = "rows";
@@ -42,6 +45,9 @@ public class SyncGatewayServiceImpl implements SyncGatewayService {
 
     @Value("${sync_gateway.url.template}")
     private String syncGatewayTemplatePath;
+
+    @Value("${sync_gateway.admin.url}")
+    private String syncGatewayAdminUrl;
 
     @Override
     public HttpStatus createDocuments(BulkOptions bulkOptions) {
@@ -52,7 +58,7 @@ public class SyncGatewayServiceImpl implements SyncGatewayService {
                 bulkOptions.getCount());
 
         RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = createHeaders(bulkOptions.getUsername(), bulkOptions.getPassword());
+        HttpHeaders headers = createSyncGatewayHeaders(bulkOptions.getUsername(), bulkOptions.getPassword());
         HttpEntity<SgDocBody> bodyHttpEntity = new HttpEntity<>(body, headers);
         ResponseEntity responseEntity = restTemplate.postForEntity(path, bodyHttpEntity, String.class);
         HttpStatus status = responseEntity.getStatusCode();
@@ -66,7 +72,7 @@ public class SyncGatewayServiceImpl implements SyncGatewayService {
                 + MessageFormat.format(ALL_DOCS_PATH, bucket);
 
         RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = createHeaders(userName, password);
+        HttpHeaders headers = createSyncGatewayHeaders(userName, password);
         HttpEntity<String> entity = new HttpEntity<>("body", headers);
 
         ResponseEntity response = restTemplate.exchange(path, HttpMethod.GET, entity, String.class);
@@ -80,7 +86,7 @@ public class SyncGatewayServiceImpl implements SyncGatewayService {
                 + MessageFormat.format(ALL_DOCS_PATH, bucket);
 
         RestTemplate restTemplate = new RestTemplate();
-        HttpHeaders headers = createHeaders(userName, password);
+        HttpHeaders headers = createSyncGatewayHeaders(userName, password);
         HttpEntity<String> entity = new HttpEntity<>("body", headers);
 
         ResponseEntity response = restTemplate.exchange(path, HttpMethod.GET, entity, Map.class);
@@ -94,6 +100,24 @@ public class SyncGatewayServiceImpl implements SyncGatewayService {
 
         resultMap.put("docsByChannels",docsByChannelsCount);
         return resultMap;
+    }
+
+    @Override
+    public HttpStatus addUser(UserOptions userOptions) {
+        String path = syncGatewayAdminUrl
+                + MessageFormat.format(ADD_USER_PATH, userOptions.getBucket());
+        HttpHeaders headers = createSyncGatewayAdminHeaders();
+        RestTemplate restTemplate = new RestTemplate();
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", userOptions.getName());
+        map.put("password", userOptions.getPassword());
+        map.put("admin_channels", userOptions.getAdminChannels());
+        map.put("admin_roles", new ArrayList<>());
+        map.put("email",userOptions.getName() + "@email.com");
+        map.put("disabled", false);
+        HttpEntity<Map> bodyHttpEntity = new HttpEntity<>(map, headers);
+        ResponseEntity response = restTemplate.postForEntity(path, bodyHttpEntity, Map.class);
+        return response.getStatusCode();
     }
 
     private Map<String, List<String>> getDocumentsChannels(final List<Map<String, Object>> rows) {
@@ -148,13 +172,20 @@ public class SyncGatewayServiceImpl implements SyncGatewayService {
         return body;
     }
 
-    private HttpHeaders createHeaders(String username, String password){
+    private HttpHeaders createSyncGatewayHeaders(String username, String password) {
         return new HttpHeaders() {{
             String auth = username + ":" + password;
             byte[] encodedAuth = Base64.encodeBase64(
                     auth.getBytes(Charset.forName("US-ASCII")) );
             String authHeader = "Basic " + new String( encodedAuth );
             set( "Authorization", authHeader );
+            set("Content-Type", "application/json");
+            set("accept", "application/json");
+        }};
+    }
+
+    private HttpHeaders createSyncGatewayAdminHeaders() {
+        return new HttpHeaders() {{
             set("Content-Type", "application/json");
             set("accept", "application/json");
         }};

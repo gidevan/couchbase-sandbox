@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.vsanyc.sandbox.couchbase.entities.BulkOptions;
+import org.vsanyc.sandbox.couchbase.entities.UserOptions;
 import org.vsanyc.sandbox.couchbase.service.SyncGatewayService;
 
 import java.util.Map;
@@ -22,9 +23,15 @@ public class SyncGatewayController {
     private SyncGatewayService syncGatewayService;
 
     @ApiOperation("Create documents for user. Bulk operation")
-    @PostMapping("/create")
+    @PostMapping("/docs/create")
     public HttpStatus createDocs(@RequestBody BulkOptions bulkOptions) {
         return syncGatewayService.createDocuments(bulkOptions);
+    }
+
+    @ApiOperation("Create user.")
+    @PostMapping("/user/create")
+    public HttpStatus createUser(@RequestBody UserOptions userOptions) {
+        return syncGatewayService.addUser(userOptions);
     }
 
     @ApiOperation("call sync_gateway /_all_docs for user")
