@@ -4,10 +4,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.vsanyc.sandbox.couchbase.entities.BulkOptions;
 
+import java.util.Map;
+
 public interface SyncGatewayService {
 
     HttpStatus createDocuments(BulkOptions bulkOptions);
 
     ResponseEntity getAllDocs(String userName, String password, String bucket);
+
+    Map<String, Object> getAllDocsStats(String userName, String password, String bucket);
 
 }

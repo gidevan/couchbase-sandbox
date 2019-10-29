@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.vsanyc.sandbox.couchbase.entities.BulkOptions;
 import org.vsanyc.sandbox.couchbase.service.SyncGatewayService;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("sg")
 public class SyncGatewayController {
@@ -29,5 +31,11 @@ public class SyncGatewayController {
     @GetMapping("/docs/bucket/{bucket}/user/{userName}/password/{password}")
     public ResponseEntity getAllDocs(String userName, String password, String bucket) {
         return syncGatewayService.getAllDocs(userName, password, bucket);
+    }
+
+    @ApiOperation("call sync_gateway /_all_docs for user. get channel statistics")
+    @GetMapping("/docs/stats/bucket/{bucket}/user/{userName}/password/{password}")
+    public Map<String, Object> getAllDocsStats(String userName, String password, String bucket) {
+        return syncGatewayService.getAllDocsStats(userName, password, bucket);
     }
 }
