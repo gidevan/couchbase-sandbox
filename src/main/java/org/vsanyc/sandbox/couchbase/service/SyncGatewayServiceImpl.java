@@ -4,12 +4,12 @@ import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.vsanyc.sandbox.couchbase.entities.BulkOptions;
-import org.vsanyc.sandbox.couchbase.entities.SgDoc;
 import org.vsanyc.sandbox.couchbase.entities.SgDocBody;
 
 import java.nio.charset.Charset;
@@ -22,7 +22,9 @@ import java.util.Map;
 @Service
 public class SyncGatewayServiceImpl implements SyncGatewayService {
 
-    private static final String BULK = "/{0}/_bulk_docs";
+    private static final String BULK_PATH = "/{0}/_bulk_docs";
+    private static final String ALL_DOCS_PATH = "/{0}/_all_docs?access=false&channels=true&include_docs=false&revs=false"
+            + "&update_seq=false";
 
     @Value("${sync_gateway.url.template}")
     private String syncGatewayTemplatePath;
@@ -31,7 +33,7 @@ public class SyncGatewayServiceImpl implements SyncGatewayService {
     public HttpStatus createDocuments(BulkOptions bulkOptions) {
         String path = MessageFormat.format(syncGatewayTemplatePath, bulkOptions.getUsername(),
                         bulkOptions.getPassword())
-                + MessageFormat.format(BULK, bulkOptions.getBucket());
+                + MessageFormat.format(BULK_PATH, bulkOptions.getBucket());
         SgDocBody body = createDocs(bulkOptions.getUsername(), bulkOptions.getChannel(),
                 bulkOptions.getCount());
 
@@ -44,8 +46,17 @@ public class SyncGatewayServiceImpl implements SyncGatewayService {
     }
 
     @Override
-    public void getAllDocs(String userName, String password, String bucket) {
+    public ResponseEntity getAllDocs(String userName, String password, String bucket) {
+        String path = MessageFormat.format(syncGatewayTemplatePath, userName,
+                        password)
+                + MessageFormat.format(ALL_DOCS_PATH, bucket);
 
+        RestTemplate restTemplate = new RestTemplate();
+        HttpHeaders headers = createHeaders(userName, password);
+        HttpEntity<String> entity = new HttpEntity<>("body", headers);
+
+        ResponseEntity response = restTemplate.exchange(path, HttpMethod.GET, entity, String.class);
+        return response;
     }
 
     private SgDocBody createDocs(String user, String channel, int count) {
