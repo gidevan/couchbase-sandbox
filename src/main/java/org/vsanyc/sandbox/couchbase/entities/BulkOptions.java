@@ -1,9 +1,12 @@
 package org.vsanyc.sandbox.couchbase.entities;
 
+import io.swagger.annotations.ApiParam;
+
 public class BulkOptions {
     private String username;
     private String password;
     private int count;
+    @ApiParam(defaultValue = "dev-sync-2")
     private String bucket;
     private String channel;
 

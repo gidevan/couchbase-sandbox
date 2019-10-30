@@ -36,7 +36,7 @@ public class SyncGatewayServiceImpl implements SyncGatewayService {
     private static final String ALL_DOCS_PATH = "/{0}/_all_docs?access=false&channels=true&include_docs=false&revs=false"
             + "&update_seq=false";
 
-    private static final String ADD_USER_PATH = "/{0}/_user/";
+    private static final String SYNC_GATEWAY_ADMIN_USER_PATH = "/{0}/_user/";
 
     private static final String TOTAL_ROWS = "total_rows";
     private static final String TOTAL_DOCUMENTS = "total_docs";
@@ -105,7 +105,7 @@ public class SyncGatewayServiceImpl implements SyncGatewayService {
     @Override
     public HttpStatus addUser(UserOptions userOptions) {
         String path = syncGatewayAdminUrl
-                + MessageFormat.format(ADD_USER_PATH, userOptions.getBucket());
+                + MessageFormat.format(SYNC_GATEWAY_ADMIN_USER_PATH, userOptions.getBucket());
         HttpHeaders headers = createSyncGatewayAdminHeaders();
         RestTemplate restTemplate = new RestTemplate();
         Map<String, Object> map = new HashMap<>();
@@ -118,6 +118,17 @@ public class SyncGatewayServiceImpl implements SyncGatewayService {
         HttpEntity<Map> bodyHttpEntity = new HttpEntity<>(map, headers);
         ResponseEntity response = restTemplate.postForEntity(path, bodyHttpEntity, Map.class);
         return response.getStatusCode();
+    }
+
+    @Override
+    public ResponseEntity getSyncGatewayUsers(String bucket) {
+        String path = syncGatewayAdminUrl
+                + MessageFormat.format(SYNC_GATEWAY_ADMIN_USER_PATH, bucket);
+        HttpHeaders headers = createSyncGatewayAdminHeaders();
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<Object> bodyHttpEntity = new HttpEntity<>(headers);
+        ResponseEntity response = restTemplate.exchange(path, HttpMethod.GET, bodyHttpEntity, String.class);
+        return response;
     }
 
     private Map<String, List<String>> getDocumentsChannels(final List<Map<String, Object>> rows) {

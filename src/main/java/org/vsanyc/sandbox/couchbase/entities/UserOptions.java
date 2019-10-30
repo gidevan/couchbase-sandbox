@@ -1,5 +1,7 @@
 package org.vsanyc.sandbox.couchbase.entities;
 
+import io.swagger.annotations.ApiParam;
+
 import java.util.List;
 
 public class UserOptions {

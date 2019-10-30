@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.vsanyc.sandbox.couchbase.entities.BulkOptions;
 import org.vsanyc.sandbox.couchbase.entities.UserOptions;
 
+import java.util.List;
 import java.util.Map;
 
 public interface SyncGatewayService {
@@ -16,5 +17,7 @@ public interface SyncGatewayService {
     Map<String, Object> getAllDocsStats(String userName, String password, String bucket);
 
     HttpStatus addUser(UserOptions userOptions);
+
+    ResponseEntity getSyncGatewayUsers(String bucket);
 
 }
