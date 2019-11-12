@@ -1,6 +1,5 @@
 package org.vsanyc.sandbox.couchbase.service;
 
-import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toMap;
 
 import org.apache.tomcat.util.codec.binary.Base64;
@@ -13,8 +12,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 import org.vsanyc.sandbox.couchbase.entities.BulkOptions;
+import org.vsanyc.sandbox.couchbase.entities.ChangesOptions;
 import org.vsanyc.sandbox.couchbase.entities.SgDocBody;
 import org.vsanyc.sandbox.couchbase.entities.UserOptions;
 
@@ -37,6 +38,7 @@ public class SyncGatewayServiceImpl implements SyncGatewayService {
             + "&update_seq=false";
 
     private static final String SYNC_GATEWAY_ADMIN_USER_PATH = "/{0}/_user/";
+    private static final String SYNC_GATEWAY_CHANGES_PATH = "/{0}/_changes/";
 
     private static final String TOTAL_ROWS = "total_rows";
     private static final String TOTAL_DOCUMENTS = "total_docs";
@@ -129,6 +131,32 @@ public class SyncGatewayServiceImpl implements SyncGatewayService {
         HttpEntity<Object> bodyHttpEntity = new HttpEntity<>(headers);
         ResponseEntity response = restTemplate.exchange(path, HttpMethod.GET, bodyHttpEntity, String.class);
         return response;
+    }
+
+    @Override
+    public ResponseEntity getChanges(String bucket, ChangesOptions changesOptions) {
+        String path = syncGatewayAdminUrl
+                + MessageFormat.format(SYNC_GATEWAY_CHANGES_PATH, bucket);
+        String parameters = createGetChangesParameters(changesOptions);
+
+        String url = path + parameters;
+        HttpHeaders headers = createSyncGatewayHeaders(changesOptions.getUserName(), changesOptions.getPassword());
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<Object> bodyHttpEntity = new HttpEntity<>(headers);
+        ResponseEntity response = restTemplate.exchange(url, HttpMethod.GET, bodyHttpEntity, String.class);
+        return response;
+    }
+
+    private String createGetChangesParameters(ChangesOptions changesOptions) {
+        StringBuilder parameters = new StringBuilder("?");
+        if (changesOptions.getFilter() != null) {
+            parameters.append("filter=").append(changesOptions.getFilter());
+        }
+        if (changesOptions.getChannels() != null) {
+            parameters.append("&").append("channels=").append(changesOptions.getChannels());
+        }
+
+        return parameters.toString();
     }
 
     private Map<String, List<String>> getDocumentsChannels(final List<Map<String, Object>> rows) {

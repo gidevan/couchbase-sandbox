@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.vsanyc.sandbox.couchbase.entities.BulkOptions;
+import org.vsanyc.sandbox.couchbase.entities.ChangesOptions;
 import org.vsanyc.sandbox.couchbase.entities.UserOptions;
 import org.vsanyc.sandbox.couchbase.service.SyncGatewayService;
 
@@ -58,4 +59,13 @@ public class SyncGatewayController {
     public ResponseEntity getUsers(@PathVariable("bucket") @ApiParam(defaultValue = "dev-sync-2") String bucket) {
         return syncGatewayService.getSyncGatewayUsers(bucket);
     }
+
+    @ApiOperation("Get sync_gateway changes")
+    @PostMapping("/bucket/{bucket}/changes")
+    public ResponseEntity getChanges(@PathVariable("bucket") @ApiParam(defaultValue = "dev-sync-2") String bucket,
+                                     @RequestBody  ChangesOptions changesOptions) {
+        return syncGatewayService.getChanges(bucket, changesOptions);
+    }
+
+
 }

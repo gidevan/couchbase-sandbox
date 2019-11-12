@@ -3,6 +3,7 @@ package org.vsanyc.sandbox.couchbase.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.vsanyc.sandbox.couchbase.entities.BulkOptions;
+import org.vsanyc.sandbox.couchbase.entities.ChangesOptions;
 import org.vsanyc.sandbox.couchbase.entities.UserOptions;
 
 import java.util.List;
@@ -19,5 +20,7 @@ public interface SyncGatewayService {
     HttpStatus addUser(UserOptions userOptions);
 
     ResponseEntity getSyncGatewayUsers(String bucket);
+
+    ResponseEntity getChanges(String bucket, ChangesOptions changesOptions);
 
 }
