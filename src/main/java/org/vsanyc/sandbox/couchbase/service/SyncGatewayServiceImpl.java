@@ -1,5 +1,6 @@
 package org.vsanyc.sandbox.couchbase.service;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 
 import org.apache.tomcat.util.codec.binary.Base64;
@@ -52,11 +53,11 @@ public class SyncGatewayServiceImpl implements SyncGatewayService {
     private String syncGatewayAdminUrl;
 
     @Override
-    public HttpStatus createDocuments(BulkOptions bulkOptions) {
+    public ResponseEntity createDocuments(BulkOptions bulkOptions) {
         String path = MessageFormat.format(syncGatewayTemplatePath, bulkOptions.getUsername(),
                         bulkOptions.getPassword())
                 + MessageFormat.format(BULK_PATH, bulkOptions.getBucket());
-        SgDocBody body = createDocs(bulkOptions.getUsername(), bulkOptions.getChannel(),
+        SgDocBody body = createDocs(bulkOptions.getUsername(), bulkOptions.getChannels(),
                 bulkOptions.getCount());
 
         RestTemplate restTemplate = new RestTemplate();
@@ -64,7 +65,7 @@ public class SyncGatewayServiceImpl implements SyncGatewayService {
         HttpEntity<SgDocBody> bodyHttpEntity = new HttpEntity<>(body, headers);
         ResponseEntity responseEntity = restTemplate.postForEntity(path, bodyHttpEntity, String.class);
         HttpStatus status = responseEntity.getStatusCode();
-        return status;
+        return responseEntity;
     }
 
     @Override
@@ -195,14 +196,15 @@ public class SyncGatewayServiceImpl implements SyncGatewayService {
         map.put(channel, ids);
     }
 
-    private SgDocBody createDocs(String user, String channel, int count) {
+    private SgDocBody createDocs(String user, List<String> channels, int count) {
         SgDocBody body = new SgDocBody();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH-mm-ss");
         Date date = new Date();
-        String valuePrefix = user + "_" + channel + "_";
+        String chs = channels.stream().collect(joining("$"));
+        String valuePrefix = user + "_" + chs + "_";
         for (int i = 0; i < count; i++) {
             Map<String, Object> doc = new HashMap<>();
-            doc.put("channel", channel);
+            doc.put("channels", channels != null ? channels : new ArrayList<>());
             doc.put("username", user);
             String value = valuePrefix + i + "_" + sdf.format(date);
             doc.put("value", value);

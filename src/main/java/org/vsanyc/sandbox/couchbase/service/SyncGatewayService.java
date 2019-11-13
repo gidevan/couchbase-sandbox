@@ -11,7 +11,7 @@ import java.util.Map;
 
 public interface SyncGatewayService {
 
-    HttpStatus createDocuments(BulkOptions bulkOptions);
+    ResponseEntity createDocuments(BulkOptions bulkOptions);
 
     ResponseEntity getAllDocs(String userName, String password, String bucket);
 

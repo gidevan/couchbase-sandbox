@@ -27,7 +27,7 @@ public class SyncGatewayController {
 
     @ApiOperation("Create documents for user. Bulk operation")
     @PostMapping("/docs/create")
-    public HttpStatus createDocs(@RequestBody BulkOptions bulkOptions) {
+    public ResponseEntity createDocs(@RequestBody BulkOptions bulkOptions) {
         return syncGatewayService.createDocuments(bulkOptions);
     }
 

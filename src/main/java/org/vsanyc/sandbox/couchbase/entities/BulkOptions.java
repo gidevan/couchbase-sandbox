@@ -2,13 +2,15 @@ package org.vsanyc.sandbox.couchbase.entities;
 
 import io.swagger.annotations.ApiParam;
 
+import java.util.List;
+
 public class BulkOptions {
     private String username;
     private String password;
     private int count;
     @ApiParam(defaultValue = "dev-sync-2")
     private String bucket;
-    private String channel;
+    private List<String> channels;
 
     public String getUsername() {
         return username;
@@ -42,11 +44,11 @@ public class BulkOptions {
         this.bucket = bucket;
     }
 
-    public String getChannel() {
-        return channel;
+    public List<String> getChannels() {
+        return channels;
     }
 
-    public void setChannel(String channel) {
-        this.channel = channel;
+    public void setChannels(List<String> channels) {
+        this.channels = channels;
     }
 }
